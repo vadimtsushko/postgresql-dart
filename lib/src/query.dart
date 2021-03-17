@@ -319,6 +319,7 @@ class PostgreSQLFormatIdentifier {
     'boolean': PostgreSQLDataType.boolean,
     'date': PostgreSQLDataType.date,
     'timestamp': PostgreSQLDataType.timestampWithoutTimezone,
+    'time': PostgreSQLDataType.timeWithoutTimezone,
     'timestamptz': PostgreSQLDataType.timestampWithTimezone,
     'jsonb': PostgreSQLDataType.json,
     'bytea': PostgreSQLDataType.byteArray,

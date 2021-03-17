@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:buffer/buffer.dart';
 
 import '../postgres.dart';
+import '../postgres.dart';
 import 'types.dart';
 
 final _bool0 = Uint8List(1)..[0] = 0;
@@ -131,7 +132,25 @@ class PostgresBinaryEncoder extends Converter<dynamic, Uint8List> {
           throw FormatException(
               'Invalid type for parameter value. Expected: DateTime Got: ${value.runtimeType}');
         }
-
+      case PostgreSQLDataType.timeWithoutTimezone:
+        {
+          if (value is DateTime) {
+            final utcDate = value.toUtc();
+            final timePart = utcDate.difference(
+                DateTime.utc(utcDate.year, utcDate.month, utcDate.day));
+            final sourceValue = DateTime.utc(2000).add(timePart);
+            // if (value.year != 2000 || value.month != 1 || value.day != 1) {
+            //   throw FormatException(
+            //       'Invalid date part for time type. Expected time for day `2000-01-01` Got: $value');
+            // }
+            final bd = ByteData(8);
+            final diff = sourceValue.toUtc().difference(DateTime.utc(2000));
+            bd.setInt64(0, diff.inMicroseconds);
+            return bd.buffer.asUint8List();
+          }
+          throw FormatException(
+              'Invalid type for parameter value. Expected: DateTime Got: ${value.runtimeType}');
+        }
       case PostgreSQLDataType.timestampWithTimezone:
         {
           if (value is DateTime) {
@@ -241,9 +260,12 @@ class PostgresBinaryDecoder extends Converter<Uint8List, dynamic> {
         return buffer.getFloat64(0);
       case PostgreSQLDataType.timestampWithoutTimezone:
       case PostgreSQLDataType.timestampWithTimezone:
+      case PostgreSQLDataType.timeWithoutTimezone:
         return DateTime.utc(2000)
             .add(Duration(microseconds: buffer.getInt64(0)));
-
+      // case PostgreSQLDataType.timeWithoutTimezone:
+      //   return DateTime.utc(1970)
+      //       .add(Duration(microseconds: buffer.getInt64(0)));
       case PostgreSQLDataType.date:
         return DateTime.utc(2000).add(Duration(days: buffer.getInt32(0)));
 
@@ -301,6 +323,7 @@ class PostgresBinaryDecoder extends Converter<Uint8List, dynamic> {
     700: PostgreSQLDataType.real,
     701: PostgreSQLDataType.double,
     1082: PostgreSQLDataType.date,
+    1083: PostgreSQLDataType.timeWithoutTimezone,
     1114: PostgreSQLDataType.timestampWithoutTimezone,
     1184: PostgreSQLDataType.timestampWithTimezone,
     2950: PostgreSQLDataType.uuid,

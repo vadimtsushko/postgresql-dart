@@ -12,15 +12,15 @@ void main() {
         CREATE TEMPORARY TABLE t (
           i int, s serial, bi bigint, bs bigserial, bl boolean, si smallint, 
           t text, f real, d double precision, dt date, ts timestamp, tsz timestamptz, j jsonb, ba bytea,
-          u uuid)
+          u uuid, tm time)
     ''');
 
     await connection.execute(
-        'INSERT INTO t (i, bi, bl, si, t, f, d, dt, ts, tsz, j, ba, u) '
+        'INSERT INTO t (i, bi, bl, si, t, f, d, dt, ts, tsz, j, ba, u, tm) '
         'VALUES (-2147483648, -9223372036854775808, TRUE, -32768, '
         "'string', 10.0, 10.0, '1983-11-06', "
         "'1983-11-06 06:00:00.000000', '1983-11-06 06:00:00.000000', "
-        "'{\"key\":\"value\"}', E'\\\\000', '00000000-0000-0000-0000-000000000000')");
+        "'{\"key\":\"value\"}', E'\\\\000', '00000000-0000-0000-0000-000000000000', '04:05:06.789')");
     await connection.execute(
         'INSERT INTO t (i, bi, bl, si, t, f, d, dt, ts, tsz, j, ba, u) '
         'VALUES (2147483647, 9223372036854775807, FALSE, 32767, '
@@ -62,7 +62,8 @@ void main() {
     expect(row1[12], equals({'key': 'value'}));
     expect(row1[13], equals([0]));
     expect(row1[14], equals('00000000-0000-0000-0000-000000000000'));
-
+    expect(row1[15], equals(DateTime.utc(2000, 1, 1, 4, 5, 6, 789)));
+    print(row1[15]);
     // upper bound row
     expect(row2[0], equals(2147483647));
     expect(row2[1], equals(2));

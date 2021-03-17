@@ -169,6 +169,22 @@ void main() {
         expect(e.toString(), contains('Expected: DateTime'));
       }
     });
+    test('time', () async {
+      final validTime = DateTime.utc(2000, 1, 1, 3, 4, 5, 324);
+      await expectInverse(validTime, PostgreSQLDataType.timeWithoutTimezone);
+      final suspiciousTime = DateTime.utc(2010, 1, 1, 3, 4, 5, 324);
+      final result = await conn.query(
+          'INSERT INTO t (v) VALUES (@v:time) RETURNING v',
+          substitutionValues: {'v': suspiciousTime});
+      expect(result.first.first, validTime);
+      try {
+        await conn.query('INSERT INTO t (v) VALUES (@v:time)',
+            substitutionValues: {'v': 'not-timestamp'});
+        fail('unreachable');
+      } on FormatException catch (e) {
+        expect(e.toString(), contains('Expected: DateTime'));
+      }
+    });
 
     test('timestamptz', () async {
       await expectInverse(

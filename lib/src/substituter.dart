@@ -35,6 +35,8 @@ class PostgreSQLFormat {
         return 'boolean';
       case PostgreSQLDataType.timestampWithoutTimezone:
         return 'timestamp';
+      case PostgreSQLDataType.timeWithoutTimezone:
+        return 'time';
       case PostgreSQLDataType.timestampWithTimezone:
         return 'timestamptz';
       case PostgreSQLDataType.date:
